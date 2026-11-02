@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECU Dashboard - Complete Development Roadmap</title>
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a2e;
+    --bg-code: #0d1117;
+    --accent-cyan: #00f0ff;
+    --accent-magenta: #ff00e5;
+    --accent-green: #00ff88;
+    --accent-yellow: #ffcc00;
+    --accent-red: #ff3366;
+    --accent-orange: #ff6600;
+    --text-primary: #ffffff;
+    --text-secondary: #8888aa;
+    --text-muted: #555577;
+    --border-color: #2a2a3e;
+    --glow-cyan: 0 0 20px rgba(0, 240, 255, 0.3);
+    --glow-magenta: 0 0 20px rgba(255, 0, 229, 0.3);
+    --font-mono: 'Courier New', 'Fira Code', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--accent-cyan); border-radius: 4px; }
+
+  /* Header */
+  .hero {
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a1a2e 100%);
+    padding: 60px 40px;
+    text-align: center;
+    border-bottom: 2px solid var(--accent-cyan);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      linear-gradient(90deg, transparent 49%, rgba(0,240,255,0.03) 50%, transparent 51%),
+      linear-gradient(0deg, transparent 49%, rgba(0,240,255,0.03) 50%, transparent 51%);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: var(--glow-cyan);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+
+  .hero .subtitle {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .hero .meta {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+
+  .hero .meta span {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--accent-cyan);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--accent-cyan);
+  }
+
+  /* Layout */
+  .layout {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Sidebar TOC */
+  .sidebar {
+    width: 280px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 30px 20px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+
+  .sidebar h3 {
+    color: var(--accent-cyan);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sidebar ul { list-style: none; }
+
+  .sidebar li { margin-bottom: 4px; }
+
+  .sidebar a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    display: block;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+  }
+
+  .sidebar a:hover {
+    color: var(--accent-cyan);
+    background: rgba(0, 240, 255, 0.05);
+    border-left-color: var(--accent-cyan);
+  }
+
+  .sidebar a.active {
+    color: var(--accent-cyan);
+    background: rgba(0, 240, 255, 0.1);
+    border-left-color: var(--accent-cyan);
+  }
+
+  /* Main Content */
+  .content {
+    flex: 1;
+    padding: 40px 50px;
+    max-width: 900px;
+  }
+
+  .section {
+    margin-bottom: 60px;
+    scroll-margin-top: 20px;
+  }
+
+  .section h2 {
+    font-size: 2rem;
+    color: var(--accent-cyan);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section h2 .num {
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .section h3 {
+    font-size: 1.4rem;
+    color: var(--accent-magenta);
+    margin: 30px 0 15px;
+  }
+
+  .section h4 {
+    font-size: 1.1rem;
+    color: var(--accent-green);
+    margin: 20px 0 10px;
+  }
+
+  .section p {
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    font-size: 1rem;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th {
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--accent-cyan);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--accent-cyan);
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  tr:hover td {
+    background: rgba(0, 240, 255, 0.03);
+  }
+
+  /* Code blocks */
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 15px 0;
+    position: relative;
+  }
+
+  pre::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent-green);
+  }
+
+  :not(pre) > code {
+    background: var(--bg-code);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--accent-cyan);
+  }
+
+  /* Lists */
+  ul, ol {
+    margin: 15px 0;
+    padding-left: 25px;
+    color: var(--text-secondary);
+  }
+
+  li { margin-bottom: 8px; }
+
+  /* Checklists */
+  .checklist {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .checklist li {
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border-left: 3px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .checklist li::before {
+    content: '☐';
+    color: var(--accent-cyan);
+    font-size: 1.1rem;
+  }
+
+  .checklist li.done::before {
+    content: '✅';
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+
+  .card:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+    transform: translateY(-2px);
+  }
+
+  .card h4 {
+    color: var(--accent-cyan);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .card .tag {
+    display: inline-block;
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--accent-cyan);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-right: 5px;
+  }
+
+  /* Architecture diagrams */
+  .diagram {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    margin: 20px 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent-green);
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Alerts */
+  .alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 4px solid;
+  }
+
+  .alert-info {
+    background: rgba(0, 240, 255, 0.05);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .alert-warning {
+    background: rgba(255, 204, 0, 0.05);
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+  }
+
+  .alert-danger {
+    background: rgba(255, 51, 102, 0.05);
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+  }
+
+  .alert-success {
+    background: rgba(0, 255, 136, 0.05);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+  }
+
+  /* Theme cards */
+  .theme-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+  }
+
+  .theme-card h4 {
+    color: var(--accent-magenta);
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+  }
+
+  .theme-card .category {
+    color: var(--accent-cyan);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 10px 24px;
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+  }
+
+  .btn:hover {
+    box-shadow: var(--glow-cyan);
+    transform: translateY(-1px);
+  }
+
+  .btn-magenta {
+    background: var(--accent-magenta);
+  }
+
+  /* Floating action */
+  .fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+  }
+
+  .fab button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: var(--glow-cyan);
+    transition: all 0.3s;
+  }
+
+  .fab button:hover {
+    transform: scale(1.1);
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .content { padding: 30px 20px; }
+    .hero h1 { font-size: 2.2rem; }
+  }
+
+  @media print {
+    .sidebar, .fab { display: none; }
+    .content { padding: 20px; max-width: 100%; }
+    body { background: white; color: black; }
+    .hero { background: #1a1a2e; }
+    pre, code { background: #f0f0f0; color: #333; }
+  }
+
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .pulse { animation: pulse 2s infinite; }
+
+  /* Phase timeline */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+    margin: 20px 0;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-magenta));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding: 15px 20px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .timeline-item h4 {
+    color: var(--accent-cyan);
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <h1>ECU DASHBOARD</h1>
+  <p class="subtitle">Complete Development Roadmap</p>
+  <div class="meta">
+    <span>📅 Setembro 2026</span>
+    <span>⏱️ 12 Semanas</span>
+    <span>️ Linux + Android</span>
+    <span>⚡ React + Tauri 2.0</span>
+    <span>📡 Web Bluetooth</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR TOC -->
+<aside class="sidebar">
+  <h3>📑 Índice</h3>
+  <ul>
+    <li><a href="#visao-geral">1. Visão Geral</a></li>
+    <li><a href="#arquitetura">2. Arquitetura Técnica</a></li>
+    <li><a href="#temas">3. Dashboard Styles</a></li>
+    <li><a href="#componentes">4. Componentes</a></li>
+    <li><a href="#roadmap">5. Roadmap</a></li>
+    <li><a href="#plataformas">6. Plataformas</a></li>
+    <li><a href="#agentes">7. Agentes de IA</a></li>
+    <li><a href="#checklists">8. Checklists</a></li>
+    <li><a href="#recursos">9. Recursos</a></li>
+    <li><a href="#conclusao">10. Conclusão</a></li>
+  </ul>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+<!-- SEÇÃO 1 -->
+<section class="section" id="visao-geral">
+  <h2><span class="num">1</span> Visão Geral do Projeto</h2>
+  
+  <h3>1.1 Objetivo Principal</h3>
+  <p>Desenvolver um <strong>sistema de dashboard ECU multi-plataforma</strong> (Desktop Linux + Android Mobile) com:</p>
+  <ul>
+    <li>Visual moderno e altamente customizável</li>
+    <li>Múltiplos temas trocáveis em tempo real</li>
+    <li>Performance gráfica de alta velocidade (60-120fps)</li>
+    <li>Conexão Bluetooth com ECUs (Speeduino, MegaSquirt, etc.)</li>
+    <li>Gauges analógicos fluidos e charts em tempo real</li>
+  </ul>
+
+  <h3>1.2 Plataformas Alvo</h3>
+  <table>
+    <thead>
+      <tr><th>Plataforma</th><th>Tecnologia</th><th>Prioridade</th><th>Bluetooth</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Desktop Linux</strong></td><td>Tauri 2.0 + React</td><td>Alta</td><td>✅ Web Bluetooth</td></tr>
+      <tr><td><strong>Android Mobile</strong></td><td>PWA + Chrome</td><td>Alta</td><td>✅ Web Bluetooth</td></tr>
+      <tr><td>iOS</td><td>Futuro</td><td>Baixa</td><td>❌ Sem suporte Web BT</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1.3 Stack Tecnológica Final</h3>
+  <div class="diagram">Frontend Core:
+├─ React 18+ com TypeScript
+├─ Vite (build tool)
+├─ Tailwind CSS (estilização)
+├─ Zustand (state management)
+└─ CSS Variables (sistema de temas)
+
+Renderização Gráfica:
+├─ Canvas 2D API (gauges principais)
+├─ WebGL/Three.js (efeitos glow/shaders)
+├─ OffscreenCanvas + Workers (performance)
+└─ Lightweight Charts / ECharts (waveforms)
+
+Conectividade:
+├─ Web Bluetooth API (comunicação ECU)
+└─ WebSocket fallback (se necessário)
+
+Desktop Wrapper:
+└─ Tauri 2.0 (Rust + WebView2)
+
+Mobile:
+└─ PWA (Progressive Web App)</div>
+</section>
+
+<!-- SEÇÃO 2 -->
+<section class="section" id="arquitetura">
+  <h2><span class="num">2</span> Arquitetura Técnica</h2>
+
+  <h3>2.1 Arquitetura de Dados</h3>
+  <div class="diagram">┌─────────────────────────────────────────────────────────┐
+│                    ECU (Bluetooth BLE)                   │
+│         Speeduino / MegaSquirt / LinkECU / etc          │
+│  Dados: RPM, MAP, TPS, CLT, IAT, Lambda, WUE, Advance   │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+                       ▼
+          ┌────────────────────────┐
+          │   Web Bluetooth API    │
+          │  (native no Chromium)  │
+          └───────────────────────┘
+                   │
+                   ▼
+      ┌────────────────────────────┐
+      │   Parser de Protocolo ECU  │
+      │  ( Speeduino / Generic )   │
+      └────────┬───────────────────┘
+               │
+               ▼
+      ┌────────────────────────────┐
+      │   Zustand Global Store     │
+      │  - Dados em tempo real     │
+      │  - Tema ativo              │
+      │  - Configurações           │
+      │  - Estado conexão BT       │
+      └────────────────────────────┘
+               │
+      ┌─────────────────────────────┐
+      ▼        ▼        ▼             ▼
+  ┌────────┐ ┌────────┐ ┌────────┐ ┌──────────┐
+  │ Gauges │ │ Charts │ │ Status │ │ Controls │
+  │ Canvas │ │ WebGL  │ │  LEDs  │ │ Sliders  │
+  │  SVG   │ │ Canvas │ │ Badges │ │  Knobs   │
+  ────────┘ └────────┘ └────────┘ └──────────┘
+               │
+               ▼
+      ┌────────────────────────┐
+      │   THEME ENGINE         │
+      │  CSS Variables (root)  │
+      │  8 temas completos     │
+      └────────────────────────┘</div>
+
+  <h3>2.2 Estrutura do Estado Global (Zustand)</h3>
+  <pre data-lang="typescript"><code>interface ECUState {
+  // Dados dos sensores
+  sensors: {
+    rpm: number;          // 0-8000+ RPM
+    map: number;          // 0-250 kPa
+    tps: number;          // 0-100 %
+    clt: number;          // -40 a 130 °C
+    iat: number;          // -40 a 80 °C
+    lambda: number;       // 0.6 a 1.4 λ
+    wue: number;          // 0-100 % (warmup)
+    advance: number;      // 0-60 ° (ignition advance)
+    battery: number;      // 10-15V
+    afr: number;          // Air-Fuel Ratio
+  };
+  
+  // Status do motor
+  status: {
+    warmup: boolean;
+    cranking: boolean;
+    halfSync: boolean;
+    ase: boolean;
+    syncLoss: number;
+    engineRunning: boolean;
+  };
+  
+  // Conexão Bluetooth
+  bluetooth: {
+    connected: boolean;
+    device: BluetoothDevice | null;
+    rssi: number;
+    lastUpdate: number;
+  };
+  
+  // Configurações
+  config: {
+    activeTheme: ThemeType;
+    refreshRate: number;    // 30 ou 60 Hz
+    layout: LayoutType;
+    gauges: GaugeConfig[];
+  };
+}</code></pre>
+</section>
+
+<!-- SEÇÃO 3 -->
+<section class="section" id="temas">
+  <h2><span class="num">3</span> Dashboard Styles - Catálogo Completo</h2>
+
+  <div class="theme-card">
+    <h4>🌆 TEMA 1: CYBERPUNK NEON</h4>
+    <div class="category">Futurista / High-Tech</div>
+    <p><strong>Paleta:</strong> Magenta (#FF00E5) + Cyan (#00F0FF) + Preto Profundo (#0A0A0F)</p>
+    <p><strong>Efeitos:</strong> Glow neon intenso, holografia, scanlines sutis</p>
+    <p><strong>Gauges:</strong> Canvas com <code>shadowBlur</code> 20-40px</p>
+    <p><strong>Charts:</strong> Waveform estilo osciloscópio synthwave</p>
+    <p><strong>Fontes:</strong> Monospace futurista (Orbitron, Rajdhani)</p>
+    <p><strong>Bibliotecas:</strong> Canvas Gauges custom, Three.js para shaders, GSAP</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>✨ TEMA 2: MINIMALIST CLEAN</h4>
+    <div class="category">Moderno / Clean / Apple-style</div>
+    <p><strong>Paleta:</strong> Branco (#FFFFFF), Cinza (#F5F5F7), Azul Apple (#0071E3)</p>
+    <p><strong>Efeitos:</strong> Soft shadows, gradients sutis, espaçamento generoso</p>
+    <p><strong>Gauges:</strong> SVG com strokes finos (2-3px)</p>
+    <p><strong>Charts:</strong> Area charts com fill gradiente suave</p>
+    <p><strong>Fontes:</strong> Inter ou SF Pro Display</p>
+    <p><strong>Bibliotecas:</strong> JustGage (SVG), Chart.js (modo light), Framer Motion</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>🏎️ TEMA 3: RACING CARBON</h4>
+    <div class="category">Esportivo / Agressivo / F1</div>
+    <p><strong>Paleta:</strong> Preto Carbono (#1A1A1A), Vermelho (#FF2D00), Laranja (#FF6600)</p>
+    <p><strong>Efeitos:</strong> Textura de fibra de carbono, warning zones vermelhas</p>
+    <p><strong>Gauges:</strong> Estilo Autometer/Defi com bezel metálico 3D</p>
+    <p><strong>Extras:</strong> 0-100 km/h timer, Top Speed, HP/Torque estimado</p>
+    <p><strong>Bibliotecas:</strong> ECharts Gauge, Lightweight Charts, CSS textures</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>💎 TEMA 4: GLASSMORPHISM</h4>
+    <div class="category">Premium / Translúcido / Camadas</div>
+    <p><strong>Paleta:</strong> Transparente + Cyan (#00F0FF) + Purple (#A855F7)</p>
+    <p><strong>Efeitos:</strong> <code>backdrop-filter: blur(20px)</code>, camadas flutuantes</p>
+    <p><strong>Gauges:</strong> SVG com filtros de blur e transparência</p>
+    <p><strong>Bibliotecas:</strong> Framer Motion, SVG filters, Tailwind CSS</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>🌆 TEMA 5: RETRO SYNTHWAVE</h4>
+    <div class="category">Retrô / Anos 80 / Nostalgia</div>
+    <p><strong>Paleta:</strong> Amber (#FFB000), Rosa (#FF0080), Purple (#9D00FF), Grid Azul</p>
+    <p><strong>Efeitos:</strong> CRT scanlines, glow vintage, seven-segment displays</p>
+    <p><strong>Gauges:</strong> Estilo analógico vintage com iluminação quente</p>
+    <p><strong>Bibliotecas:</strong> Custom Canvas 2D, CSS scanline overlay, WebGL shader CRT</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>🎯 TEMA 6: MILITARY HUD</h4>
+    <div class="category">Tático / Militar / HUD</div>
+    <p><strong>Paleta:</strong> Verde Fósforo (#39FF14), Preto (#0A0A0A), Vermelho warning</p>
+    <p><strong>Efeitos:</strong> Radar sweep, targeting reticle, grid tático</p>
+    <p><strong>Extras:</strong> Target Lock animado, System health, Tactical mode</p>
+    <p><strong>Bibliotecas:</strong> D3.js (radar chart), Canvas custom, Grid overlay CSS</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>📦 TEMA 7: MODULAR WIDGETS</h4>
+    <div class="category">SaaS / Drag-and-Drop / Customizável</div>
+    <p><strong>Paleta:</strong> Azul (#0071E3), Teal (#14B8A6), Branco (#FFFFFF)</p>
+    <p><strong>Efeitos:</strong> Cards independentes, grid CSS, sombras suaves</p>
+    <p><strong>Extras:</strong> Drag-and-drop de widgets, resize handles, layouts salvos</p>
+    <p><strong>Bibliotecas:</strong> React Grid Layout, GaugeJS, Chart.js</p>
+  </div>
+
+  <div class="theme-card">
+    <h4>🔷 TEMA 8: 3D ISOMETRIC</h4>
+    <div class="category">Premium / 3D / Imersivo</div>
+    <p><strong>Paleta:</strong> Metal Escuro (#2D2D2D), Prata (#C0C0C0), Vermelho (#FF0000)</p>
+    <p><strong>Efeitos:</strong> Profundidade real, bezels metálicos, sombras projetadas</p>
+    <p><strong>Extras:</strong> Câmera 3D orbitável, iluminação dinâmica, reflexos</p>
+    <p><strong>Bibliotecas:</strong> Three.js + React Three Fiber, Drei, WebGL shaders</p>
+  </div>
+
+  <h3>Tabela Comparativa de Temas</h3>
+  <table>
+    <thead>
+      <tr><th>Tema</th><th>Complexidade</th><th>Performance</th><th>Uso Recomendado</th><th>Dificuldade</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Cyberpunk Neon</td><td>Alta</td><td>⭐⭐⭐⭐</td><td>Track days, shows</td><td>Média</td></tr>
+      <tr><td>Minimalist Clean</td><td>Baixa</td><td>⭐⭐⭐⭐⭐</td><td>Daily driving</td><td>Baixa</td></tr>
+      <tr><td>Racing Carbon</td><td>Média</td><td>⭐⭐⭐⭐</td><td>Competições</td><td>Média</td></tr>
+      <tr><td>Glassmorphism</td><td>Média</td><td>⭐⭐⭐</td><td>Demo/Exibição</td><td>Média</td></tr>
+      <tr><td>Retro Synthwave</td><td>Alta</td><td>⭐⭐⭐</td><td>Estilo/Custom</td><td>Alta</td></tr>
+      <tr><td>Military HUD</td><td>Alta</td><td>⭐⭐⭐⭐</td><td>Diagnóstico</td><td>Alta</td></tr>
+      <tr><td>Modular Widgets</td><td>Média</td><td>⭐⭐⭐</td><td>Tuning avançado</td><td>Média</td></tr>
+      <tr><td>3D Isometric</td><td>Muito Alta</td><td>⭐⭐</td><td>Demo/Marketing</td><td>Muito Alta</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SEÇÃO 4 -->
+<section class="section" id="componentes">
+  <h2><span class="num">4</span> Componentes e Implementação</h2>
+
+  <h3>4.1 Gauges Analógicos</h3>
+  
+  <h4>Gauge RPM (Principal)</h4>
+  <ul>
+    <li><strong>Range:</strong> 0-8000+ RPM (configurável)</li>
+    <li><strong>Tamanho:</strong> Grande (300-400px desktop, 200px mobile)</li>
+    <li><strong>Posição:</strong> Central</li>
+    <li><strong>Update rate:</strong> 60Hz</li>
+    <li><strong>Zonas:</strong> Verde (0-4000), Amarelo (4000-6000), Vermelho (6000+)</li>
+  </ul>
+
+  <pre data-lang="typescript"><code>interface RPMGaugeProps {
+  value: number;
+  min: number;
+  max: number;
+  redline: number;
+  size: number;
+  showDigital: boolean;
+  theme: ThemeType;
+}
+
+const renderRPMGauge = (ctx: CanvasRenderingContext2D, value: number) => {
+  const angle = mapRange(value, 0, 8000, -0.75 * PI, 0.75 * PI);
+  drawArc(ctx, angle);
+  drawNeedle(ctx, angle);
+  drawDigitalValue(ctx, value);
+  drawZones(ctx);
+};</code></pre>
+
+  <h4>Gauges Secundários</h4>
+  <table>
+    <thead>
+      <tr><th>Gauge</th><th>Range</th><th>Unidade</th><th>Precisão</th><th>Update</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>MAP</td><td>0-250</td><td>kPa</td><td>0.1</td><td>30Hz</td></tr>
+      <tr><td>TPS</td><td>0-100</td><td>%</td><td>0.1</td><td>30Hz</td></tr>
+      <tr><td>CLT</td><td>-40 a 130</td><td>°C</td><td>1</td><td>10Hz</td></tr>
+      <tr><td>IAT</td><td>-40 a 80</td><td>°C</td><td>1</td><td>10Hz</td></tr>
+      <tr><td>Lambda</td><td>0.6 a 1.4</td><td>λ</td><td>0.001</td><td>30Hz</td></tr>
+      <tr><td>AFR</td><td>8-20</td><td>:1</td><td>0.1</td><td>30Hz</td></tr>
+      <tr><td>WUE</td><td>0-100</td><td>%</td><td>1</td><td>10Hz</td></tr>
+      <tr><td>Advance</td><td>0-60</td><td>°</td><td>0.5</td><td>30Hz</td></tr>
+      <tr><td>Battery</td><td>10-15</td><td>V</td><td>0.1</td><td>5Hz</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 Charts e Visualizações</h3>
+  
+  <h4>Waveform Chart (Osciloscópio)</h4>
+  <ul>
+    <li>Tipo: Line chart multi-canal</li>
+    <li>Canais: RPM, MAP, TPS, Lambda (configurável)</li>
+    <li>Scroll contínuo (ring buffer)</li>
+    <li>Zoom e pan</li>
+    <li>Grid ajustável</li>
+  </ul>
+
+  <pre data-lang="typescript"><code>interface WaveformChartProps {
+  channels: ChannelConfig[];
+  bufferSize: number;  // 100-1000 pontos
+  refreshRate: number; // Hz
+  theme: ThemeType;
+}
+
+// Ring buffer para performance
+class DataBuffer {
+  private buffer: Float32Array;
+  private index: number = 0;
+  
+  push(value: number) {
+    this.buffer[this.index] = value;
+    this.index = (this.index + 1) % this.buffer.length;
+  }
+  
+  getData(): Float32Array {
+    return this.buffer;
+  }
+}</code></pre>
+
+  <h3>4.3 Sistema de Temas - CSS Variables</h3>
+  <pre data-lang="css"><code>:root {
+  /* Cores base */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: rgba(18, 18, 26, 0.85);
+  
+  /* Cores de destaque */
+  --accent-primary: #00f0ff;
+  --accent-secondary: #ff00e5;
+  --accent-warning: #ffcc00;
+  --accent-danger: #ff3366;
+  --accent-success: #00ff88;
+  
+  /* Gauges */
+  --gauge-face: #0d0d15;
+  --gauge-needle: var(--accent-primary);
+  --gauge-tick: #ffffff;
+  --gauge-glow: 0 0 20px rgba(0, 240, 255, 0.6);
+  
+  /* Texto */
+  --text-primary: #ffffff;
+  --text-secondary: #8888aa;
+  
+  /* Efeitos */
+  --border-radius: 12px;
+  --glass-blur: 20px;
+  --shadow-intensity: 0.8;
+  --transition-speed: 300ms;
+}
+
+/* Troca de tema */
+[data-theme="racing"] {
+  --accent-primary: #ff2d00;
+  --accent-secondary: #ff6600;
+  --gauge-glow: 0 0 15px rgba(255, 45, 0, 0.5);
+  --bg-texture: url("carbon-fiber.png");
+}</code></pre>
+
+  <h3>4.4 Bluetooth - Web Bluetooth API</h3>
+  <pre data-lang="typescript"><code>export function useBluetooth() {
+  const [connected, setConnected] = useState(false);
+  const [data, setData] = useState&lt;ECUData&gt;({
+    rpm: 0, map: 0, tps: 0, clt: 0, iat: 0, lambda: 0
+  });
+
+  const connect = async () => {
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'Speeduino' }],
+        optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+      });
+
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(
+        '0000ffe0-0000-1000-8000-00805f9b34fb'
+      );
+      const characteristic = await service.getCharacteristic(
+        '0000ffe1-0000-1000-8000-00805f9b34fb'
+      );
+
+      await characteristic.startNotifications();
+      characteristic.addEventListener(
+        'characteristicvaluechanged', 
+        (event) => {
+          const data = new DataView(
+            event.target.value.buffer
+          );
+          setData({
+            rpm: data.getUint16(0, true),
+            map: data.getUint16(2, true) / 10,
+            tps: data.getUint8(4),
+            clt: data.getInt8(5),
+            iat: data.getInt8(6),
+            lambda: data.getUint16(7, true) / 1000,
+          });
+        }
+      );
+
+      setConnected(true);
+    } catch (error) {
+      console.error('Bluetooth error:', error);
+    }
+  };
+
+  return { connected, data, connect };
+}</code></pre>
+</section>
+
+<!-- SEÇÃO 5 -->
+<section class="section" id="roadmap">
+  <h2><span class="num">5</span> Roadmap de Desenvolvimento</h2>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <h4>FASE 1: FUNDAÇÃO (Semanas 1-2)</h4>
+      <p><strong>Semana 1:</strong> Setup do ambiente</p>
+      <ul class="checklist">
+        <li>Instalar Node.js 20+, PNPM, Rust</li>
+        <li>Configurar Tauri 2.0 no Linux</li>
+        <li>Criar projeto React + TypeScript + Vite</li>
+        <li>Configurar Tailwind CSS</li>
+        <li>Setup ESLint + Prettier</li>
+      </ul>
+      <p><strong>Semana 2:</strong> Bluetooth e Estado Global</p>
+      <ul class="checklist">
+        <li>Implementar Web Bluetooth API</li>
+        <li>Criar parser para protocolo Speeduino</li>
+        <li>Configurar Zustand store</li>
+        <li>Implementar conexão/desconexão</li>
+        <li>Testar com ECU real ou simulador</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <h4>FASE 2: COMPONENTES GRÁFICOS (Semanas 3-5)</h4>
+      <p><strong>Semana 3:</strong> Gauge RPM Principal</p>
+      <ul class="checklist">
+        <li>Criar componente Gauge base com Canvas</li>
+        <li>Implementar gauge RPM (grande, central)</li>
+        <li>Adicionar zonas de cor</li>
+        <li>Animação suave da agulha (easing)</li>
+        <li>Display digital integrado</li>
+        <li>Suporte a High DPI (Retina)</li>
+      </ul>
+      <p><strong>Semana 4:</strong> Gauges Secundários</p>
+      <ul class="checklist">
+        <li>Criar componente Gauge reutilizável</li>
+        <li>Implementar 6-8 gauges secundários</li>
+        <li>Configurar tamanhos menores (150px)</li>
+        <li>Adicionar labels e unidades</li>
+        <li>Grid layout responsivo</li>
+      </ul>
+      <p><strong>Semana 5:</strong> Charts e Waveforms</p>
+      <ul class="checklist">
+        <li>Integrar Lightweight Charts ou ECharts</li>
+        <li>Implementar waveform chart</li>
+        <li>Ring buffer para dados em tempo real</li>
+        <li>Multi-canal (RPM, MAP, TPS, Lambda)</li>
+        <li>Zoom e pan</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <h4>FASE 3: SISTEMA DE TEMAS (Semanas 6-7)</h4>
+      <p><strong>Semana 6:</strong> Theme Engine</p>
+      <ul class="checklist">
+        <li>Definir CSS Variables para todos os temas</li>
+        <li>Implementar 4 temas iniciais</li>
+        <li>Criar componente ThemeSelector</li>
+        <li>Persistir tema no localStorage</li>
+        <li>Troca de tema em tempo real</li>
+      </ul>
+      <p><strong>Semana 7:</strong> Temas Avançados</p>
+      <ul class="checklist">
+        <li>Implementar 4 temas restantes</li>
+        <li>Adicionar efeitos especiais por tema</li>
+        <li>CRT scanlines (Retro)</li>
+        <li>Radar sweep (Military)</li>
+        <li>Drag-and-drop (Modular)</li>
+        <li>Shaders 3D (Isometric)</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <h4>FASE 4: POLISH E OTIMIZAÇÃO (Semanas 8-9)</h4>
+      <p><strong>Semana 8:</strong> Animações e UX</p>
+      <ul class="checklist">
+        <li>Integrar GSAP ou Framer Motion</li>
+        <li>Animações de entrada/saída</li>
+        <li>Transições suaves entre temas</li>
+        <li>Loading states</li>
+        <li>Error handling</li>
+        <li>Toast notifications</li>
+      </ul>
+      <p><strong>Semana 9:</strong> Performance</p>
+      <ul class="checklist">
+        <li>Implementar OffscreenCanvas + Workers</li>
+        <li>Otimizar renderização de gauges</li>
+        <li>Lazy loading de componentes</li>
+        <li>Code splitting</li>
+        <li>Memory profiling</li>
+        <li>Battery optimization</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <h4>FASE 5: MOBILE E DEPLOY (Semanas 10-12)</h4>
+      <p><strong>Semana 10:</strong> Mobile PWA</p>
+      <ul class="checklist">
+        <li>Criar manifest.json</li>
+        <li>Configurar service worker</li>
+        <li>Implementar layout portrait/landscape</li>
+        <li>Touch gestures</li>
+        <li>Testar em Android real</li>
+      </ul>
+      <p><strong>Semana 11:</strong> Desktop Tauri</p>
+      <ul class="checklist">
+        <li>Configurar Tauri 2.0</li>
+        <li>Menu nativo e tray icon</li>
+        <li>Atalhos de teclado</li>
+        <li>Fullscreen mode</li>
+        <li>Build para Linux (AppImage, deb)</li>
+      </ul>
+      <p><strong>Semana 12:</strong> Testes e Documentação</p>
+      <ul class="checklist">
+        <li>Testes end-to-end (Playwright)</li>
+        <li>Testes de performance</li>
+        <li>Documentação técnica</li>
+        <li>README.md completo</li>
+        <li>Deploy web (Vercel/Netlify)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 6 -->
+<section class="section" id="plataformas">
+  <h2><span class="num">6</span> Especificações Técnicas por Plataforma</h2>
+
+  <h3>6.1 Desktop (Linux via Tauri 2.0)</h3>
+  <div class="alert alert-info">
+    <strong>Requisitos:</strong> Ubuntu 20.04+ / Fedora 36+ / Arch Linux | Kernel 5.10+ | RAM: 4GB mínimo
+  </div>
+
+  <pre data-lang="bash"><code># Dependências Linux (Ubuntu/Debian)
+sudo apt update
+sudo apt install -y \
+  libwebkit2gtk-4.1-dev \
+  build-essential \
+  curl \
+  wget \
+  libssl-dev \
+  libgtk-3-dev \
+  libayatana-appindicator3-dev \
+  librsvg2-dev \
+  patchelf
+
+# Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+
+# Comandos
+pnpm tauri dev      # Desenvolvimento
+pnpm tauri build    # Build production</code></pre>
+
+  <h3>6.2 Mobile (Android PWA)</h3>
+  <pre data-lang="json"><code>{
+  "name": "ECU Dashboard - Real-Time Tuning",
+  "short_name": "ECU Dash",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0a0f",
+  "theme_color": "#00f0ff",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "categories": ["utilities", "automotive"]
+}</code></pre>
+
+  <h3>6.3 Bluetooth Compatibility Matrix</h3>
+  <table>
+    <thead>
+      <tr><th>Dispositivo ECU</th><th>Protocolo</th><th>Suporte</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Speeduino</td><td>Custom UART</td><td>✅ Nativo</td></tr>
+      <tr><td>MegaSquirt</td><td>MS Bluetooth</td><td>✅ Configurável</td></tr>
+      <tr><td>LinkECU</td><td>CAN/Serial</td><td>✅ Via adaptador</td></tr>
+      <tr><td>Haltech</td><td>Proprietário</td><td>⚠️ Verificar</td></tr>
+      <tr><td>OBD2 Genérico</td><td>OBD-II</td><td>✅ Nativo</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SEÇÃO 7 -->
+<section class="section" id="agentes">
+  <h2><span class="num">7</span> Agentes de IA e Automação</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🤖 Agent 1: Code Generator</h4>
+      <p>GitHub Copilot / Cursor - Autocomplete inteligente, geração de componentes, sugestões de otimização</p>
+      <span class="tag">VS Code</span>
+      <span class="tag">Copilot</span>
+    </div>
+
+    <div class="card">
+      <h4>🧪 Agent 2: Testing Agent</h4>
+      <p>Playwright + AI - Testes E2E automatizados, cobertura de cenários críticos</p>
+      <span class="tag">Playwright</span>
+      <span class="tag">E2E</span>
+    </div>
+
+    <div class="card">
+      <h4>📊 Agent 3: Performance Monitoring</h4>
+      <p>Sentry / LogRocket - Monitoramento de erros, performance, memory leaks</p>
+      <span class="tag">Sentry</span>
+      <span class="tag">APM</span>
+    </div>
+
+    <div class="card">
+      <h4> Agent 4: Documentation</h4>
+      <p>Mintlify / Docusaurus - Documentação técnica auto-gerada a partir do código</p>
+      <span class="tag">Docs</span>
+      <span class="tag">Auto</span>
+    </div>
+
+    <div class="card">
+      <h4> Agent 5: CI/CD Agent</h4>
+      <p>GitHub Actions - Build, teste e deploy automatizados</p>
+      <span class="tag">GitHub Actions</span>
+      <span class="tag">CI/CD</span>
+    </div>
+  </div>
+
+  <h3>Exemplo: CI/CD com GitHub Actions</h3>
+  <pre data-lang="yaml"><code>name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-desktop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: |
+          pnpm install
+          sudo apt-get install -y libwebkit2gtk-4.1-dev
+      - name: Build Tauri app
+        run: pnpm tauri build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ecu-dashboard-linux
+          path: src-tauri/target/release/bundle/
+
+  deploy-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}</code></pre>
+</section>
+
+<!-- SEÇÃO 8 -->
+<section class="section" id="checklists">
+  <h2><span class="num">8</span> Checklists e Critérios de Aceitação</h2>
+
+  <h3>8.1 Checklist de Desenvolvimento</h3>
+  
+  <h4>Setup Inicial</h4>
+  <ul class="checklist">
+    <li>Node.js 20+ instalado</li>
+    <li>Rust e Cargo configurados</li>
+    <li>Tauri CLI instalada</li>
+    <li>PNPM configurado</li>
+    <li>Git repository inicializado</li>
+    <li>VS Code extensions instalados</li>
+  </ul>
+
+  <h4>Bluetooth</h4>
+  <ul class="checklist">
+    <li>Web Bluetooth API detectada</li>
+    <li>Dispositivo ECU pareado</li>
+    <li>Dados recebidos corretamente</li>
+    <li>Parser funcionando</li>
+    <li>Reconexão automática implementada</li>
+    <li>Tratamento de erros (disconnect)</li>
+  </ul>
+
+  <h4>Gauges</h4>
+  <ul class="checklist">
+    <li>RPM gauge central funcional</li>
+    <li>6-8 gauges secundários</li>
+    <li>Animações suaves (60fps)</li>
+    <li>Zonas de cor configuráveis</li>
+    <li>Labels e unidades corretas</li>
+    <li>Responsivo (mobile/desktop)</li>
+  </ul>
+
+  <h4>Charts</h4>
+  <ul class="checklist">
+    <li>Waveform chart implementado</li>
+    <li>Multi-canal funcionando</li>
+    <li>Scroll contínuo</li>
+    <li>Zoom e pan</li>
+    <li>Performance otimizada</li>
+    <li>Grid e legendas</li>
+  </ul>
+
+  <h4>Temas</h4>
+  <ul class="checklist">
+    <li>8 temas completos</li>
+    <li>CSS Variables configuradas</li>
+    <li>Troca em tempo real</li>
+    <li>Persistência localStorage</li>
+    <li>Theme selector UI</li>
+    <li>Preview de temas</li>
+  </ul>
+
+  <h4>Performance</h4>
+  <ul class="checklist">
+    <li>60fps em todos os gauges</li>
+    <li>OffscreenCanvas implementado</li>
+    <li>Workers configurados</li>
+    <li>Memory leaks verificados</li>
+    <li>Bundle size otimizado</li>
+    <li>Lazy loading ativo</li>
+  </ul>
+
+  <h3>8.2 Métricas de Sucesso</h3>
+  <table>
+    <thead>
+      <tr><th>Métrica</th><th>Target</th><th>Como Medir</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Frame rate gauges</td><td>≥60fps</td><td>requestAnimationFrame timing</td></tr>
+      <tr><td>Chart update rate</td><td>≥30Hz</td><td>Timestamp diff</td></tr>
+      <tr><td>Memory usage</td><td>&lt;200MB</td><td>Chrome DevTools Memory</td></tr>
+      <tr><td>CPU usage (idle)</td><td>&lt;10%</td><td>Task Manager / htop</td></tr>
+      <tr><td>Time to first paint</td><td>&lt;2s</td><td>Lighthouse</td></tr>
+      <tr><td>Time to interactive</td><td>&lt;3s</td><td>Lighthouse</td></tr>
+      <tr><td>Bluetooth connect time</td><td>&lt;5s</td><td>Manual test</td></tr>
+      <tr><td>Theme switch time</td><td>&lt;100ms</td><td>Performance API</td></tr>
+      <tr><td>Test coverage</td><td>≥80%</td><td>Vitest coverage</td></tr>
+      <tr><td>Lighthouse score</td><td>≥90</td><td>Lighthouse CI</td></tr>
+      <tr><td>Bundle size</td><td>&lt;2MB</td><td>Webpack bundle analyzer</td></tr>
+      <tr><td>TypeScript errors</td><td>0</td><td>tsc --noEmit</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SEÇÃO 9 -->
+<section class="section" id="recursos">
+  <h2><span class="num">9</span> Recursos Adicionais</h2>
+
+  <h3>9.1 Dependências Principais</h3>
+  <pre data-lang="json"><code>{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.0",
+    "tailwindcss": "^3.3.0",
+    "@tauri-apps/api": "^2.0.0",
+    "three": "^0.160.0",
+    "@react-three/fiber": "^8.15.0",
+    "@react-three/drei": "^9.92.0",
+    "lightweight-charts": "^4.1.0",
+    "echarts": "^5.4.3",
+    "gsap": "^3.12.2",
+    "framer-motion": "^10.16.0",
+    "d3": "^7.8.5",
+    "react-grid-layout": "^1.4.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.2.0",
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "vitest": "^1.0.0",
+    "@testing-library/react": "^14.0.0",
+    "playwright": "^1.40.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0"
+  }
+}</code></pre>
+
+  <h3>9.2 Links Úteis</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>📚 Documentação</h4>
+      <ul>
+        <li><a href="https://v2.tauri.app/" style="color: var(--accent-cyan);">Tauri 2.0 Docs</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API" style="color: var(--accent-cyan);">Web Bluetooth API</a></li>
+        <li><a href="https://react.dev/" style="color: var(--accent-cyan);">React Docs</a></li>
+        <li><a href="https://tailwindcss.com/docs" style="color: var(--accent-cyan);">Tailwind CSS</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h4>🎓 Tutoriais</h4>
+      <ul>
+        <li><a href="https://wiki.speeduino.com/" style="color: var(--accent-cyan);">Speeduino Wiki</a></li>
+        <li><a href="https://codelabs.developers.google.com/codelabs/web-bluetooth" style="color: var(--accent-cyan);">Web Bluetooth Codelab</a></li>
+        <li><a href="https://v2.tauri.app/start/" style="color: var(--accent-cyan);">Tauri + React Tutorial</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h4>👥 Comunidades</h4>
+      <ul>
+        <li><a href="https://discord.gg/speeduino" style="color: var(--accent-cyan);">Speeduino Discord</a></li>
+        <li><a href="https://discord.gg/tauri" style="color: var(--accent-cyan);">Tauri Discord</a></li>
+        <li><a href="https://reactiflux.com/" style="color: var(--accent-cyan);">Reactiflux</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>9.3 Ferramentas de Desenvolvimento</h3>
+  <h4>VS Code Extensions</h4>
+  <ul>
+    <li>ES7+ React/Redux/React-Native snippets</li>
+    <li>Tailwind CSS IntelliSense</li>
+    <li>Rust Analyzer</li>
+    <li>Tauri API IntelliSense</li>
+    <li>GitHub Copilot</li>
+    <li>Error Lens</li>
+    <li>GitLens</li>
+  </ul>
+
+  <h4>Linux Tools</h4>
+  <pre data-lang="bash"><code># Monitoramento
+htop              # CPU/RAM
+nvtop             # GPU (se aplicável)
+lsof              # File descriptors
+
+# Bluetooth
+bluetoothctl      # CLI Bluetooth
+hcitool           # HCI commands
+gatttool          # GATT operations</code></pre>
+</section>
+
+<!-- SEÇÃO 10 -->
+<section class="section" id="conclusao">
+  <h2><span class="num">10</span> Conclusão e Próximos Passos</h2>
+
+  <div class="alert alert-success">
+    <strong>🎯 Resumo:</strong> Este documento cobre todo o ciclo de desenvolvimento do ECU Dashboard, desde o setup inicial até o deploy em produção.
+  </div>
+
+  <h3>Timeline Estimada: 12 semanas (3 meses)</h3>
+  <table>
+    <thead>
+      <tr><th>Período</th><th>Foco</th><th>Entregas</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Semanas 1-2</td><td>Fundação</td><td>Bluetooth, estado global</td></tr>
+      <tr><td>Semanas 3-5</td><td>Componentes gráficos</td><td>Gauges, charts</td></tr>
+      <tr><td>Semanas 6-7</td><td>Sistema de temas</td><td>8 temas</td></tr>
+      <tr><td>Semanas 8-9</td><td>Polish e otimização</td><td>Performance, UX</td></tr>
+      <tr><td>Semanas 10-12</td><td>Mobile, desktop e deploy</td><td>App completo</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Stack Final Confirmada</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>✅ Frontend</h4>
+      <p>React + TypeScript</p>
+    </div>
+    <div class="card">
+      <h4>✅ Desktop</h4>
+      <p>Tauri 2.0 (Linux)</p>
+    </div>
+    <div class="card">
+      <h4>✅ Mobile</h4>
+      <p>PWA (Android)</p>
+    </div>
+    <div class="card">
+      <h4>✅ Estilos</h4>
+      <p>Tailwind CSS</p>
+    </div>
+    <div class="card">
+      <h4>✅ Renderização</h4>
+      <p>Canvas/WebGL</p>
+    </div>
+    <div class="card">
+      <h4>✅ Conectividade</h4>
+      <p>Web Bluetooth</p>
+    </div>
+    <div class="card">
+      <h4>✅ Estado</h4>
+      <p>Zustand</p>
+    </div>
+    <div class="card">
+      <h4>✅ Temas</h4>
+      <p>CSS Variables</p>
+    </div>
+  </div>
+
+  <h3>Próximos Passos Imediatos</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <h4>📅 Hoje</h4>
+      <pre data-lang="bash"><code># Criar projeto
+pnpm create tauri-app@latest ecu-dashboard
+
+# Instalar dependências
+cd ecu-dashboard
+pnpm install
+
+# Rodar em dev
+pnpm tauri dev</code></pre>
+    </div>
+
+    <div class="timeline-item">
+      <h4> Esta Semana</h4>
+      <ul>
+        <li>Configurar Bluetooth</li>
+        <li>Criar gauge RPM básico</li>
+        <li>Testar com ECU real</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <h4>📅 Este Mês</h4>
+      <ul>
+        <li>Todos os gauges funcionais</li>
+        <li>4 temas implementados</li>
+        <li>Mobile PWA funcionando</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item">
+      <h4> Em 3 Meses</h4>
+      <ul>
+        <li>App completo em produção</li>
+        <li>8 temas disponíveis</li>
+        <li>Documentação publicada</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert alert-info" style="text-align: center; margin-top: 40px;">
+    <strong>🚀 Boa sorte no desenvolvimento!</strong><br>
+    <span style="font-size: 0.9rem; color: var(--text-secondary);">
+      Documento criado em Setembro 2026 | Versão 1.0
+    </span>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- Floating Action Buttons -->
+<div class="fab">
+  <button onclick="window.print()" title="Imprimir / Salvar PDF">🖨️</button>
+  <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Voltar ao topo">⬆️</button>
+</div>
+
+<script>
+  // Active link highlighting on scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.sidebar a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      if (scrollY >= sectionTop - 100) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  });
+
+  // Smooth scroll for nav links
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
